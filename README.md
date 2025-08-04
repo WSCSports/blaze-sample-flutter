@@ -14,7 +14,7 @@ Further details can be found here:
 
 2. In the ios folder, run:
     ```bash
-    run pod update
+    pod update
 
 3. In `main.dart` replace `'<API_KEY>'` with the WSC api key you were provided.
 

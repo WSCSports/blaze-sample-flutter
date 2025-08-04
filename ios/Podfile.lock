@@ -1,0 +1,72 @@
+PODS:
+  - blaze_flutter_gam_ads (0.1.0):
+    - blaze_flutter_sdk
+    - BlazeGAM (= 1.11.4)
+    - Flutter
+  - blaze_flutter_ima_ads (0.1.0):
+    - blaze_flutter_sdk
+    - BlazeIMA (= 1.11.4)
+    - Flutter
+  - blaze_flutter_sdk (0.1.0):
+    - BlazeSDK (= 1.11.4)
+    - Flutter
+  - BlazeGAM (1.11.4):
+    - BlazeSDK (= 1.11.4)
+    - Google-Mobile-Ads-SDK (< 13.0.0, >= 12.0.0)
+  - BlazeIMA (1.11.4):
+    - BlazeSDK (= 1.11.4)
+    - GoogleAds-IMA-iOS-SDK (< 4.0.0, >= 3.18.4)
+  - BlazeSDK (1.11.4)
+  - Flutter (1.0.0)
+  - Google-Mobile-Ads-SDK (12.8.0):
+    - GoogleUserMessagingPlatform (>= 1.1)
+  - GoogleAds-IMA-iOS-SDK (3.26.1)
+  - GoogleUserMessagingPlatform (3.0.0)
+  - integration_test (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - blaze_flutter_gam_ads (from `.symlinks/plugins/blaze_flutter_gam_ads/ios`)
+  - blaze_flutter_ima_ads (from `.symlinks/plugins/blaze_flutter_ima_ads/ios`)
+  - blaze_flutter_sdk (from `.symlinks/plugins/blaze_flutter_sdk/ios`)
+  - Flutter (from `Flutter`)
+  - integration_test (from `.symlinks/plugins/integration_test/ios`)
+
+SPEC REPOS:
+  https://github.com/WSCSports/blaze-specs-ios.git:
+    - BlazeGAM
+    - BlazeIMA
+    - BlazeSDK
+  trunk:
+    - Google-Mobile-Ads-SDK
+    - GoogleAds-IMA-iOS-SDK
+    - GoogleUserMessagingPlatform
+
+EXTERNAL SOURCES:
+  blaze_flutter_gam_ads:
+    :path: ".symlinks/plugins/blaze_flutter_gam_ads/ios"
+  blaze_flutter_ima_ads:
+    :path: ".symlinks/plugins/blaze_flutter_ima_ads/ios"
+  blaze_flutter_sdk:
+    :path: ".symlinks/plugins/blaze_flutter_sdk/ios"
+  Flutter:
+    :path: Flutter
+  integration_test:
+    :path: ".symlinks/plugins/integration_test/ios"
+
+SPEC CHECKSUMS:
+  blaze_flutter_gam_ads: a6d1f2a1d1476331bacbb6ed06df54ad0a996262
+  blaze_flutter_ima_ads: d1e6867ee3a089103f2c7eedcefaa147e9a4efee
+  blaze_flutter_sdk: 0837f3ea1aff2c6aca4f2725a12b3881899d2d85
+  BlazeGAM: 7c12f2d67253d456ee5e1e3fdfc35db3efba5407
+  BlazeIMA: 20ae645f5a44d4c1a41774939fa27c8957759e45
+  BlazeSDK: 415e8b1382ba48e28427c82a8b890ec7836facdf
+  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  Google-Mobile-Ads-SDK: ece122bc89b38cab319543bc464a9ceabfe1d307
+  GoogleAds-IMA-iOS-SDK: 10b8f194e7cd2714d4de9a0587c46c8aaf06c620
+  GoogleUserMessagingPlatform: f8d0cdad3ca835406755d0a69aa634f00e76d576
+  integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e
+
+PODFILE CHECKSUM: e526b5108fda3a3c90b1abb45ed4280b4bbc31fe
+
+COCOAPODS: 1.16.2

@@ -1,0 +1,41 @@
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/WSCSports/blaze-android-release")
+            credentials {
+                /** you can add to gradle.properties the following keys
+                 ** gprUsr=GITHUB_USER_ID & gprKey=PERSONAL_ACCESS_TOKEN
+                 * GITHUB_USER_ID is your github user
+                 * PERSONAL_ACCESS_TOKEN is your github personal token
+                 **/
+
+                username = "$gprUsr" ?: System.getenv("GPR_USER")
+                password = "$gprKey" ?: System.getenv("GPR_API_KEY")
+            }
+        }
+
+    }
+}
+
+rootProject.buildDir = '../build'
+subprojects {
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+}
+subprojects {
+    project.evaluationDependsOn(':app')
+}
+
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
+}

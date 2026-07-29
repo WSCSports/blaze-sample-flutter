@@ -4,6 +4,7 @@ import 'package:blaze_flutter_sdk_example/navigation/app_navigation.dart';
 import 'package:blaze_flutter_sdk/blaze_flutter_sdk.dart';
 import 'package:blaze_flutter_gam_ads/blaze_flutter_gam_ads.dart';
 import 'package:blaze_flutter_ima_ads/blaze_flutter_ima_ads.dart';
+import 'package:blaze_flutter_sdk_example/utils/app_follow_entities_manager.dart';
 import 'package:blaze_flutter_sdk_example/utils/player_style_utils.dart';
 import 'package:blaze_flutter_sdk_example/utils/sdk_utils.dart' as sdk_utils;
 import 'package:flutter/material.dart';
@@ -128,6 +129,12 @@ class _MyAppState extends State<MyApp> {
       await BlazeIMA.enableAds(
         delegate: sdk_utils.imaAdsDelegate,
       );
+
+      BlazeSDK.setCastingDelegate(sdk_utils.castingDelegate);
+      BlazeSDK.setPipDelegate(sdk_utils.pipDelegate);
+
+      // Follow Entities Setup — see AppFollowEntitiesManager for details
+      AppFollowEntitiesManager().start();
 
       debugPrint('initBlazeSDK success');
 

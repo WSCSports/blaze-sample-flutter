@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:blaze_flutter_sdk/blaze_flutter_sdk.dart';
+import '../utils/app_follow_entities_manager.dart';
 import '../utils/sdk_utils.dart' as sdk_utils;
 
 class ActionScreen extends StatefulWidget {
@@ -16,14 +17,41 @@ class _ActionScreenState extends State<ActionScreen>
       TextEditingController();
   final TextEditingController _externalUserIdController =
       TextEditingController();
+  final TextEditingController _addEntityController = TextEditingController();
+  final TextEditingController _removeEntityController = TextEditingController();
 
   bool _showAlerts = true;
+  bool _isMuted = true;
+
+  @override
+  void initState() {
+    super.initState();
+    // Reflect the current SDK-wide mute state on mount (native default is
+    // muted).
+    sdk_utils.getIsMuted().then((muted) {
+      if (!mounted) return;
+      setState(() => _isMuted = muted);
+    });
+  }
+
+  Future<void> _togglePlayerSoundState() async {
+    await sdk_utils.setPlayerSoundState(
+      _isMuted ? BlazePlayerSoundState.unmute : BlazePlayerSoundState.mute,
+    );
+    // Re-read the state from the SDK so the button label reflects the real
+    // value.
+    final muted = await sdk_utils.getIsMuted();
+    if (!mounted) return;
+    setState(() => _isMuted = muted);
+  }
 
   @override
   void dispose() {
     _geoController.dispose();
     _universalLinkController.dispose();
     _externalUserIdController.dispose();
+    _addEntityController.dispose();
+    _removeEntityController.dispose();
     super.dispose();
   }
 
@@ -38,6 +66,12 @@ class _ActionScreenState extends State<ActionScreen>
 
   final _videosDataSource = BlazeDataSourceType.labels(
     labels: BlazeWidgetLabel.singleLabel('videos'),
+  );
+
+  final _forYouWithLabelFilterDataSource = BlazeDataSourceType.recommendations(
+    recommendationsType: BlazeRecommendationsType.forYou(
+      anyLabelFilter: ['667be28ade367c1ab12b17a7', '667be2a22a660425bcaffdbf'],
+    ),
   );
 
   @override
@@ -112,6 +146,15 @@ class _ActionScreenState extends State<ActionScreen>
             ),
           ),
           _buildActionSection(
+            'Play Recommendations',
+            child: _buildActionButton(
+              'Play',
+              () => sdk_utils.playMoments(
+                dataSource: _forYouWithLabelFilterDataSource,
+              ),
+            ),
+          ),
+          _buildActionSection(
             'Play Story Page',
             child: _buildActionButton(
               'Play',
@@ -126,12 +169,32 @@ class _ActionScreenState extends State<ActionScreen>
             child:
                 _buildActionButton('Dismiss', () => sdk_utils.dismissPlayer()),
           ),
+          _buildActionSection(
+            'Show Search Screen',
+            child: _buildActionButton(
+              'Search',
+              () => sdk_utils.showSearchScreen(
+                options: BlazeSearchScreenOptions(
+                  suggestionsDataSource: BlazeDataSourceType.labels(
+                    labels: BlazeWidgetLabel.singleLabel('moments'),
+                  ),
+                ),
+              ),
+            ),
+          ),
           _buildSectionHeader('Actions'),
           _buildActionSection(
             'Set Do Not Track',
             child: _buildActionButton(
               'Set',
               () => sdk_utils.setDoNotTrack(),
+            ),
+          ),
+          _buildActionSection(
+            'Player Sound (${_isMuted ? 'Muted' : 'Unmuted'})',
+            child: _buildActionButton(
+              _isMuted ? 'Unmute' : 'Mute',
+              _togglePlayerSoundState,
             ),
           ),
           _buildActionSection(
@@ -169,6 +232,69 @@ class _ActionScreenState extends State<ActionScreen>
                 if (geo.isNotEmpty) {
                   sdk_utils.updateGeoRestriction(geo);
                 }
+              },
+            ),
+          ),
+          _buildSectionHeader('Follow Entities'),
+          _buildActionSection(
+            'Add Entity',
+            child: _buildInputActionRow(
+              controller: _addEntityController,
+              hint: 'Entity ID',
+              buttonTitle: 'Add',
+              onPressed: () {
+                final id = _addEntityController.text.trim();
+                if (id.isNotEmpty) {
+                  AppFollowEntitiesManager()
+                      .insertFollowedEntities([id]).then((_) {
+                    if (!context.mounted) return;
+                    _showInfoDialog('Follow Entities', 'Added: $id');
+                    _addEntityController.clear();
+                  });
+                }
+              },
+            ),
+          ),
+          _buildActionSection(
+            'Remove Entity',
+            child: _buildInputActionRow(
+              controller: _removeEntityController,
+              hint: 'Entity ID',
+              buttonTitle: 'Remove',
+              onPressed: () {
+                final id = _removeEntityController.text.trim();
+                if (id.isNotEmpty) {
+                  AppFollowEntitiesManager()
+                      .removeFollowedEntities([id]).then((_) {
+                    if (!context.mounted) return;
+                    _showInfoDialog('Follow Entities', 'Removed: $id');
+                    _removeEntityController.clear();
+                  });
+                }
+              },
+            ),
+          ),
+          _buildActionSection(
+            'Get All Entities',
+            child: _buildActionButton('Get', () {
+              AppFollowEntitiesManager().getFollowedEntities().then((ids) {
+                if (!context.mounted) return;
+                _showInfoDialog(
+                  'Followed Entities',
+                  ids.isEmpty ? '(empty)' : ids.join(', '),
+                );
+              });
+            }),
+          ),
+          _buildActionSection(
+            'Clear All Entities',
+            child: _buildActionButton(
+              'Clear',
+              () {
+                AppFollowEntitiesManager().clearAll().then((_) {
+                  if (!context.mounted) return;
+                  _showInfoDialog('Follow Entities', 'All entities cleared');
+                });
               },
             ),
           ),
@@ -246,6 +372,7 @@ class _ActionScreenState extends State<ActionScreen>
     required TextEditingController controller,
     required String hint,
     required VoidCallback onPressed,
+    String buttonTitle = 'Set',
   }) {
     return Row(
       children: [
@@ -275,8 +402,26 @@ class _ActionScreenState extends State<ActionScreen>
             style: const TextStyle(fontSize: 14),
           ),
         ),
-        _buildActionButton('Set', onPressed),
+        _buildActionButton(buttonTitle, onPressed),
       ],
+    );
+  }
+
+  void _showInfoDialog(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
     );
   }
 

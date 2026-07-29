@@ -15,14 +15,14 @@ void setGlobalContext(BuildContext context) {
   _globalContext = context;
 }
 
-/// Show error dialog to user
-void _showAlert(String message) {
+/// Show alert dialog to user
+void _showAlert(String message, {String title = 'Error'}) {
   if (showAlerts && _globalContext != null) {
     showDialog(
       context: _globalContext!,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Error'),
+          title: Text(title),
           content: Text(message),
           actions: [
             TextButton(
@@ -41,29 +41,69 @@ void setShowAlerts(bool show) {
   showAlerts = show;
 }
 
+/// Blocks rapid double-taps on the play buttons so we don't launch two
+/// entry-point players at once (black screen). The guard flag is set before
+/// the launch and cleared when the play call completes.
+const Duration _playCooldown = Duration(milliseconds: 1500);
+bool _isPlayLaunching = false;
+DateTime? _lastPlayLaunch;
+
+bool _shouldBlockPlayLaunch() {
+  final now = DateTime.now();
+  if (_isPlayLaunching ||
+      (_lastPlayLaunch != null &&
+          now.difference(_lastPlayLaunch!) < _playCooldown)) {
+    return true;
+  }
+  _isPlayLaunching = true;
+  _lastPlayLaunch = now;
+  return false;
+}
+
 /// Play a single story
 void playStory({required String storyId, String? pageId}) {
-  BlazeSDK.playStory(storyId: storyId, pageId: pageId).then((_) {
+  if (_shouldBlockPlayLaunch()) return;
+  BlazeSDK.playStory(
+    storyId: storyId,
+    pageId: pageId,
+    // playbackConfiguration: const BlazeStoriesPlaybackConfiguration(
+    //   bufferingSpinnerDelayMs: 500,
+    // ), // Uncomment this if you want to customize the playback configuration.
+  ).then((_) {
     debugPrint('playStory success');
   }).catchError((error) {
     if (showAlerts) _showAlert('$error');
     debugPrint('Error playing Story: $error');
-  });
+  }).whenComplete(() => _isPlayLaunching = false);
 }
 
 /// Play stories with data source
-void playStories({required BlazeDataSourceType dataSource}) {
-  BlazeSDK.playStories(dataSource: dataSource).then((_) {
+void playStories({
+  required BlazeDataSourceType dataSource,
+  String? entryContentId,
+}) {
+  if (_shouldBlockPlayLaunch()) return;
+  BlazeSDK.playStories(
+    dataSource: dataSource,
+    entryContentId: entryContentId,
+    // playbackConfiguration: const BlazeStoriesPlaybackConfiguration(
+    //   bufferingSpinnerDelayMs: 500,
+    // ), // Uncomment this if you want to customize the playback configuration.
+  ).then((_) {
     debugPrint('playStories success');
   }).catchError((error) {
     if (showAlerts) _showAlert('Error playing stories: $error');
     debugPrint('Error playing stories: $error');
-  });
+  }).whenComplete(() => _isPlayLaunching = false);
 }
 
 /// Prepare stories
-void prepareStories({required BlazeDataSourceType dataSource}) {
-  BlazeSDK.prepareStories(dataSource: dataSource).then((_) {
+void prepareStories({
+  required BlazeDataSourceType dataSource,
+  String? entryContentId,
+}) {
+  BlazeSDK.prepareStories(dataSource: dataSource, entryContentId: entryContentId)
+      .then((_) {
     debugPrint('prepareStories success');
   }).catchError((error) {
     if (showAlerts) _showAlert('Error prepareStories: $error');
@@ -73,27 +113,37 @@ void prepareStories({required BlazeDataSourceType dataSource}) {
 
 /// Play a single moment
 void playMoment({required String momentId}) {
+  if (_shouldBlockPlayLaunch()) return;
   BlazeSDK.playMoment(momentId: momentId).then((_) {
     debugPrint('playMoment success');
   }).catchError((error) {
     if (showAlerts) _showAlert('$error');
     debugPrint('Error playing moment: $error');
-  });
+  }).whenComplete(() => _isPlayLaunching = false);
 }
 
 /// Play moments with data source
-void playMoments({required BlazeDataSourceType dataSource}) {
-  BlazeSDK.playMoments(dataSource: dataSource).then((_) {
+void playMoments({
+  required BlazeDataSourceType dataSource,
+  String? entryContentId,
+}) {
+  if (_shouldBlockPlayLaunch()) return;
+  BlazeSDK.playMoments(dataSource: dataSource, entryContentId: entryContentId)
+      .then((_) {
     debugPrint('playMoments success');
   }).catchError((error) {
     if (showAlerts) _showAlert('Error playing moments: $error');
     debugPrint('Error playing moments: $error');
-  });
+  }).whenComplete(() => _isPlayLaunching = false);
 }
 
 /// Prepare moments
-void prepareMoments({required BlazeDataSourceType dataSource}) {
-  BlazeSDK.prepareMoments(dataSource: dataSource).then((_) {
+void prepareMoments({
+  required BlazeDataSourceType dataSource,
+  String? entryContentId,
+}) {
+  BlazeSDK.prepareMoments(dataSource: dataSource, entryContentId: entryContentId)
+      .then((_) {
     debugPrint('prepareMoments success');
   }).catchError((error) {
     if (showAlerts) _showAlert('Error prepareMoments: $error');
@@ -101,29 +151,71 @@ void prepareMoments({required BlazeDataSourceType dataSource}) {
   });
 }
 
+/// Append moments to the currently presented moments player
+void appendMomentsToPlayer({
+  required String sourceId,
+  required BlazeDataSourceType dataSource,
+  bool shouldOrderContentByReadStatus = false,
+}) {
+  BlazeSDK.appendMomentsToPlayer(
+    sourceId: sourceId,
+    dataSource: dataSource,
+    shouldOrderContentByReadStatus: shouldOrderContentByReadStatus,
+  ).then((_) {
+    debugPrint('appendMomentsToPlayer success');
+  }).catchError((error) {
+    if (showAlerts) _showAlert('Error append moments to player: $error');
+    debugPrint('Error append moments to player: $error');
+  });
+}
+
 /// Play videos with data source
-void playVideos({required BlazeDataSourceType dataSource}) {
-  BlazeSDK.playVideos(dataSource: dataSource).then((_) {
+void playVideos({
+  required BlazeDataSourceType dataSource,
+  String? entryContentId,
+}) {
+  if (_shouldBlockPlayLaunch()) return;
+  BlazeSDK.playVideos(
+    dataSource: dataSource,
+    entryContentId: entryContentId,
+    // playbackConfiguration: const BlazeVideosPlaybackConfiguration(
+    //   multiAspectRatio: true,
+    //   shouldOpenInLandscape: false,
+    //   bufferingSpinnerDelayMs: 500,
+    // ), // Uncomment this if you want to customize the playback configuration.
+  ).then((_) {
     debugPrint('playVideos success');
   }).catchError((error) {
     if (showAlerts) _showAlert('Error playing videos: $error');
     debugPrint('Error playing videos: $error');
-  });
+  }).whenComplete(() => _isPlayLaunching = false);
 }
 
 /// Play a single video
 void playVideo({required String videoId}) {
-  BlazeSDK.playVideo(videoId: videoId).then((_) {
+  if (_shouldBlockPlayLaunch()) return;
+  BlazeSDK.playVideo(
+    videoId: videoId,
+    // playbackConfiguration: const BlazeVideosPlaybackConfiguration(
+    //   multiAspectRatio: true,
+    //   shouldOpenInLandscape: true,
+    //   bufferingSpinnerDelayMs: 500,
+    // ), // Uncomment this if you want to customize the playback configuration.
+  ).then((_) {
     debugPrint('playVideo success');
   }).catchError((error) {
     if (showAlerts) _showAlert('$error');
     debugPrint('Error playing video: $error');
-  });
+  }).whenComplete(() => _isPlayLaunching = false);
 }
 
 /// Prepare videos
-void prepareVideos({required BlazeDataSourceType dataSource}) {
-  BlazeSDK.prepareVideos(dataSource: dataSource).then((_) {
+void prepareVideos({
+  required BlazeDataSourceType dataSource,
+  String? entryContentId,
+}) {
+  BlazeSDK.prepareVideos(dataSource: dataSource, entryContentId: entryContentId)
+      .then((_) {
     debugPrint('prepareVideos success');
   }).catchError((error) {
     if (showAlerts) _showAlert('Error prepareVideos: $error');
@@ -138,6 +230,41 @@ void setDoNotTrack() {
   }).catchError((error) {
     if (showAlerts) _showAlert('$error');
     debugPrint('Error set Do Not Track: $error');
+  });
+}
+
+/// Forces the global mute state for every Blaze player (Stories / Moments /
+/// Videos). The SDK does not persist this value, so the host app must
+/// re-apply it on each launch.
+Future<void> setPlayerSoundState(BlazePlayerSoundState state) {
+  return BlazeSDK.setPlayerSoundState(state).then((_) {
+    debugPrint("setPlayerSoundState('${state.name}') success");
+  }).catchError((error) {
+    if (showAlerts) _showAlert('Error setPlayerSoundState: $error');
+    debugPrint('Error setPlayerSoundState: $error');
+  });
+}
+
+/// Read the current SDK-wide mute state.
+Future<bool> getIsMuted() async {
+  try {
+    final result = await BlazeSDK.isMuted();
+    debugPrint('isMuted success, result -> $result');
+    return result;
+  } catch (error) {
+    if (showAlerts) _showAlert('Error isMuted: $error');
+    debugPrint('Error isMuted: $error');
+    return true; // native default is muted
+  }
+}
+
+/// Show the standalone search screen
+void showSearchScreen({BlazeSearchScreenOptions? options}) {
+  BlazeSDK.showSearchScreen(options: options).then((_) {
+    debugPrint('showSearchScreen success');
+  }).catchError((error) {
+    if (showAlerts) _showAlert('Error showSearchScreen: $error');
+    debugPrint('Error showSearchScreen: $error');
   });
 }
 
@@ -290,6 +417,10 @@ final globalDelegate = BlazeGlobalDelegate(
         'BlazeGlobalDelegate - onErrorThrown - params: ${params.asJsonString()}');
     if (showAlerts) _showAlert('SDK Error: ${params.error.message}');
   },
+  // playbackModificationHandler: (request) {
+  //   return const BlazePlaybackModificationResponse(
+  //       modifiedURL: 'https://example.com/modified-url.mp4');
+  // },
 );
 
 /// Player entry point delegate implementation
@@ -330,6 +461,34 @@ final playerEntryPointDelegate = BlazePlayerEntryPointDelegate(
         debugPrint(
             'EntryPointDelegate - onPlayerEventTriggered - playerType: ${params.playerType.name} sourceId: ${params.sourceId} playerEvent: VideoId ${event.videoId}');
     }
+  },
+  onTriggerCustomActionButton: (params) {
+    debugPrint(
+        'EntryPointDelegate - onTriggerCustomActionButton - params: ${params.asJsonString()}');
+    if (showAlerts) {
+      _showAlert('${params.buttonName} (${params.buttonId})',
+          title: 'Custom Action');
+    }
+  },
+  onReadStatusChanged: (params) {
+    debugPrint(
+        'EntryPointDelegate - onReadStatusChanged - params: ${params.asJsonString()}');
+  },
+);
+
+/// Casting delegate implementation
+final castingDelegate = BlazeCastingDelegate(
+  onCastingStateChanged: (params) {
+    debugPrint(
+        'BlazeCastingDelegate - onCastingStateChanged - params: ${params.asJsonString()}');
+  },
+);
+
+/// Pip delegate implementation
+final pipDelegate = BlazePipDelegate(
+  onPiPStateChanged: (params) {
+    debugPrint(
+        'BlazePipDelegate - onPiPStateChanged - params: ${params.asJsonString()}');
   },
 );
 
@@ -376,6 +535,63 @@ BlazeWidgetDelegate createWidgetDelegate(String widgetId) {
     onWidgetItemClicked: (event) {
       debugPrint(
           'BlazeWidgetDelegate - widgetId: $widgetId - onWidgetItemClicked - event: ${event.asJsonString()}');
+    },
+    onTriggerCustomActionButton: (params) {
+      debugPrint(
+          'BlazeWidgetDelegate - widgetId: $widgetId - onTriggerCustomActionButton - params: ${params.asJsonString()}');
+      if (showAlerts) {
+        _showAlert('${params.buttonName} (${params.buttonId})',
+            title: 'Custom Action');
+      }
+    },
+  );
+}
+
+/// Create a delegate for the Moments "widget to tabs" fullscreen container.
+/// Pass it per-widget via the `momentsContainerTabsDelegate` parameter on
+/// `BlazeMomentsRowView` / `BlazeMomentsGridView`.
+BlazePlayerContainerTabsDelegate createMomentsContainerTabsDelegate(
+    String widgetId) {
+  return BlazePlayerContainerTabsDelegate(
+    onTabSelected: (params) {
+      debugPrint(
+          'MomentsContainerTabsDelegate - widgetId: $widgetId - onTabSelected - params: ${params.asJsonString()}');
+    },
+    onDataLoadStarted: (params) {
+      debugPrint(
+          'MomentsContainerTabsDelegate - widgetId: $widgetId - onDataLoadStarted - params: ${params.asJsonString()}');
+    },
+    onDataLoadComplete: (params) {
+      debugPrint(
+          'MomentsContainerTabsDelegate - widgetId: $widgetId - onDataLoadComplete - params: ${params.asJsonString()}');
+    },
+    onPlayerDidAppear: (params) {
+      debugPrint(
+          'MomentsContainerTabsDelegate - widgetId: $widgetId - onPlayerDidAppear - params: ${params.asJsonString()}');
+    },
+    onPlayerDidDismiss: (params) {
+      debugPrint(
+          'MomentsContainerTabsDelegate - widgetId: $widgetId - onPlayerDidDismiss - params: ${params.asJsonString()}');
+    },
+    onTriggerCTA: (params) {
+      debugPrint(
+          'MomentsContainerTabsDelegate - widgetId: $widgetId - onTriggerCTA - params: ${params.asJsonString()}');
+    },
+    onTriggerPlayerBodyTextLink: (params) {
+      debugPrint(
+          'MomentsContainerTabsDelegate - widgetId: $widgetId - onTriggerPlayerBodyTextLink - params: ${params.asJsonString()}');
+    },
+    onPlayerEventTriggered: (params) {
+      debugPrint(
+          'MomentsContainerTabsDelegate - widgetId: $widgetId - onPlayerEventTriggered - params: ${params.asJsonString()}');
+    },
+    onTriggerCustomActionButton: (params) {
+      debugPrint(
+          'MomentsContainerTabsDelegate - widgetId: $widgetId - onTriggerCustomActionButton - params: ${params.asJsonString()}');
+      if (showAlerts) {
+        _showAlert('${params.buttonName} (${params.buttonId})',
+            title: 'Custom Action (Tabs)');
+      }
     },
   );
 }

@@ -47,6 +47,11 @@ class HomeScreenView extends StatelessWidget {
           widgetId: "Home Moments Row",
           context: context,
         ),
+        buildMomentsTabsRowWidget(
+          title: "Moments Widget to Tabs",
+          widgetId: "Home Moments Tabs Row",
+          context: context,
+        ),
         buildMomentGridWidget(
           title: "Moments Grid Widget",
           widgetId: "Home Moments Grid",

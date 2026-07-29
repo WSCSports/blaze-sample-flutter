@@ -35,5 +35,11 @@
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-2608666659798024~9704817519" />
+
+        <!-- Google Cast: Uses BlazeSDK's default options. Apps can provide their own OptionsProvider instead. -->
+        <meta-data
+            android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
+            android:value="com.blaze.blazesdk.cast.BlazeDefaultCastOptionsProvider" />
+
     </application>
 </manifest>

@@ -290,7 +290,7 @@ void setExternalUserId([String? userId]) {
 
 /// Handle universal link
 void handleUniversalLink(String link) {
-  BlazeSDK.handleUniversalLink(link).then((_) {
+  BlazeSDK.handleUniversalLink(link: link).then((_) {
     debugPrint('set universal link success');
   }).catchError((error) {
     if (showAlerts) _showAlert('$error');
@@ -301,7 +301,7 @@ void handleUniversalLink(String link) {
 /// Check if can handle universal link
 Future<bool> canHandleUniversalLink(String link) async {
   try {
-    final result = await BlazeSDK.canHandleUniversalLink(link);
+    final result = await BlazeSDK.canHandleUniversalLink(link: link);
     debugPrint('canHandleUniversalLink success, result -> $result');
     return result;
   } catch (error) {
@@ -364,9 +364,9 @@ final googleBannerAdsDelegate = BlazeGAMBannerAdsDelegate(
     debugPrint(
         'BlazeGAMDelegate - BannerAds - onGAMBannerAdsAdEvent - params: ${params.asJsonString()}');
   },
-  onGAMBannerAdsAdError: (errorMessage) {
+  onGAMBannerAdsAdError: (params) {
     debugPrint(
-        'BlazeGAMDelegate - BannerAds - onGAMBannerAdsAdError - errorMessage: $errorMessage');
+        'BlazeGAMDelegate - BannerAds - onGAMBannerAdsAdError - params: ${params.asJsonString()}');
   },
 );
 

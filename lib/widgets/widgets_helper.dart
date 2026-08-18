@@ -169,7 +169,7 @@ Widget buildMomentsTabsRowWidget(
     {required String title,
     required String widgetId,
     required BuildContext context}) {
-  final controller = BlazeWidgetController();
+  final controller = BlazeMomentsWidgetController();
 
   final tabsConfiguration = BlazeMomentsWidgetTabsConfiguration(
     containerSourceId: 'moments-tabs-demo',
@@ -235,9 +235,11 @@ Widget buildMomentsTabsRowWidget(
         widgetId: widgetId,
         controller: controller,
         tabsConfiguration: tabsConfiguration,
-        presetWidgetLayout: BlazeWidgetLayoutPreset.moments_row_verticalRectangles,
+        presetWidgetLayout:
+            BlazeWidgetLayoutPreset.moments_row_verticalRectangles,
         widgetDelegate: createWidgetDelegate(widgetId),
-        momentsContainerTabsDelegate: createMomentsContainerTabsDelegate(widgetId),
+        momentsContainerTabsDelegate:
+            createMomentsContainerTabsDelegate(widgetId),
       ),
     ),
     const SizedBox(

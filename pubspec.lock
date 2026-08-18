@@ -13,29 +13,29 @@ packages:
     dependency: "direct main"
     description:
       path: blaze_flutter_gam_ads
-      ref: "1.19.0"
-      resolved-ref: "0912e401bb29fdb1ebe2afd5712d662a78a3280b"
+      ref: "1.20.0"
+      resolved-ref: bec23f0fec2f6bcfca1dd9b9fcf8db450cefd722
       url: "https://github.com/WSCSports/blaze-flutter-packages.git"
     source: git
-    version: "1.19.0"
+    version: "1.20.0"
   blaze_flutter_ima_ads:
     dependency: "direct main"
     description:
       path: blaze_flutter_ima_ads
-      ref: "1.19.0"
-      resolved-ref: "0912e401bb29fdb1ebe2afd5712d662a78a3280b"
+      ref: "1.20.0"
+      resolved-ref: bec23f0fec2f6bcfca1dd9b9fcf8db450cefd722
       url: "https://github.com/WSCSports/blaze-flutter-packages.git"
     source: git
-    version: "1.19.0"
+    version: "1.20.0"
   blaze_flutter_sdk:
     dependency: "direct main"
     description:
       path: blaze_flutter_sdk
-      ref: "1.19.0"
-      resolved-ref: "0912e401bb29fdb1ebe2afd5712d662a78a3280b"
+      ref: "1.20.0"
+      resolved-ref: bec23f0fec2f6bcfca1dd9b9fcf8db450cefd722
       url: "https://github.com/WSCSports/blaze-flutter-packages.git"
     source: git
-    version: "1.19.0"
+    version: "1.20.0"
   boolean_selector:
     dependency: transitive
     description:

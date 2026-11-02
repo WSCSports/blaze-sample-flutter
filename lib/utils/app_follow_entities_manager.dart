@@ -25,7 +25,9 @@ class AppFollowEntitiesManager {
   factory AppFollowEntitiesManager() => _instance;
 
   Timer? _syncTimer;
-  List<String> _followedEntityIds = [];
+  List<BlazeFollowEntity> _followedEntities = [];
+
+  BlazeFollowEntitiesManager get _sdkManager => BlazeSDK.followEntitiesManager;
 
   /// Initialize the follow entities system.
   /// Call after [BlazeSDK.initSDK] completes.
@@ -35,34 +37,39 @@ class AppFollowEntitiesManager {
     debugPrint('[AppFollowEntitiesManager] Started');
   }
 
-  Future<void> setFollowedEntities(List<String> entityIds) async {
-    await BlazeSDK.setFollowedEntities(entityIds);
-    _followedEntityIds = List<String>.from(entityIds);
-    debugPrint('[AppFollowEntitiesManager] setFollowedEntities: $entityIds');
+  Future<void> setFollowedEntities(List<BlazeFollowEntity> entities) async {
+    await _sdkManager.setFollowedEntities(entities);
+    _followedEntities = List<BlazeFollowEntity>.from(entities);
+    debugPrint('[AppFollowEntitiesManager] setFollowedEntities: $entities');
   }
 
-  Future<void> insertFollowedEntities(List<String> entityIds) async {
-    await BlazeSDK.insertFollowedEntities(entityIds);
-    _followedEntityIds = {..._followedEntityIds, ...entityIds}.toList();
-    debugPrint('[AppFollowEntitiesManager] insertFollowedEntities: $entityIds');
+  Future<void> insertFollowedEntities(List<BlazeFollowEntity> entities) async {
+    await _sdkManager.insertFollowedEntities(entities);
+    final ids = entities.map((e) => e.id).toSet();
+    _followedEntities = [
+      ..._followedEntities.where((e) => !ids.contains(e.id)),
+      ...entities,
+    ];
+    debugPrint('[AppFollowEntitiesManager] insertFollowedEntities: $entities');
   }
 
-  Future<void> removeFollowedEntities(List<String> entityIds) async {
-    await BlazeSDK.removeFollowedEntities(entityIds);
-    _followedEntityIds =
-        _followedEntityIds.where((id) => !entityIds.contains(id)).toList();
-    debugPrint('[AppFollowEntitiesManager] removeFollowedEntities: $entityIds');
+  Future<void> removeFollowedEntities(List<BlazeFollowEntity> entities) async {
+    await _sdkManager.removeFollowedEntities(entities);
+    final ids = entities.map((e) => e.id).toSet();
+    _followedEntities =
+        _followedEntities.where((e) => !ids.contains(e.id)).toList();
+    debugPrint('[AppFollowEntitiesManager] removeFollowedEntities: $entities');
   }
 
-  Future<List<String>> getFollowedEntities() async {
-    final ids = await BlazeSDK.getFollowedEntities();
-    debugPrint('[AppFollowEntitiesManager] getFollowedEntities: $ids');
-    return ids;
+  Future<List<BlazeFollowEntity>> getFollowedEntities() async {
+    final entities = await _sdkManager.getFollowedEntities();
+    debugPrint('[AppFollowEntitiesManager] getFollowedEntities: $entities');
+    return entities;
   }
 
   Future<void> clearAll() async {
-    await BlazeSDK.setFollowedEntities([]);
-    _followedEntityIds = [];
+    await _sdkManager.setFollowedEntities([]);
+    _followedEntities = [];
     debugPrint('[AppFollowEntitiesManager] clearAll');
   }
 
@@ -74,11 +81,10 @@ class AppFollowEntitiesManager {
       debugPrint(
           '[AppFollowEntitiesManager] onFollowEntityClicked: ${params.asJsonString()}');
 
-      if (params.newFollowingState) {
-        debugPrint('  → Entity ${params.followEntity.id} is now FOLLOWED');
-      } else {
-        debugPrint('  → Entity ${params.followEntity.id} is now UNFOLLOWED');
-      }
+      final entity = params.followEntity;
+      final state = params.newFollowingState ? 'FOLLOWED' : 'UNFOLLOWED';
+      debugPrint(
+          '  → Entity ${entity.id} (${entity.entityType?.name}, ${entity.providerName}) is now $state');
 
       _scheduleSyncToStorage();
     },
@@ -93,11 +99,11 @@ class AppFollowEntitiesManager {
 
   Future<void> _syncToStorage() async {
     try {
-      final currentIds = await BlazeSDK.getFollowedEntities();
-      _followedEntityIds = currentIds;
+      final current = await _sdkManager.getFollowedEntities();
+      _followedEntities = current;
       // In production: persist to shared_preferences here.
       debugPrint(
-          '[AppFollowEntitiesManager] syncToStorage — snapshot: $currentIds');
+          '[AppFollowEntitiesManager] syncToStorage — snapshot: $current');
     } catch (e) {
       debugPrint('[AppFollowEntitiesManager] syncToStorage error: $e');
     }
@@ -105,9 +111,9 @@ class AppFollowEntitiesManager {
 
   void _loadAndApplyStoredEntities() {
     // In production: read from shared_preferences here.
-    final stored = _followedEntityIds;
+    final stored = _followedEntities;
     if (stored.isNotEmpty) {
-      BlazeSDK.setFollowedEntities(stored);
+      _sdkManager.setFollowedEntities(stored);
       debugPrint('[AppFollowEntitiesManager] Loaded stored entities: $stored');
     }
   }

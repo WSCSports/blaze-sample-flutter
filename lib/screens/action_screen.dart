@@ -117,6 +117,34 @@ class _ActionScreenState extends State<ActionScreen>
               () => sdk_utils.playMoments(dataSource: _momentsDataSource),
             ),
           ),
+          // Fill mode makes the iOS bottom safe-area bleed visible; compare the two.
+          _buildActionSection(
+            'Play Moments (fill)',
+            child: _buildActionButton(
+              'Play',
+              () => sdk_utils.playMoments(
+                dataSource: _momentsDataSource,
+                playerStyle: const BlazeMomentsPlayerStyle(
+                  playerDisplayMode:
+                      BlazePlayerDisplayMode.resizeAspectFillCenterCrop,
+                ),
+              ),
+            ),
+          ),
+          _buildActionSection(
+            'Play Moments (fill, iOS bottom safe area)',
+            child: _buildActionButton(
+              'Play',
+              () => sdk_utils.playMoments(
+                dataSource: _momentsDataSource,
+                playerStyle: const BlazeMomentsPlayerStyle(
+                  playerDisplayMode:
+                      BlazePlayerDisplayMode.resizeAspectFillCenterCrop,
+                  ignoresBottomSafeArea: true,
+                ),
+              ),
+            ),
+          ),
           _buildActionSection(
             'Prepare Moments',
             child: _buildActionButton(
@@ -245,8 +273,8 @@ class _ActionScreenState extends State<ActionScreen>
               onPressed: () {
                 final id = _addEntityController.text.trim();
                 if (id.isNotEmpty) {
-                  AppFollowEntitiesManager()
-                      .insertFollowedEntities([id]).then((_) {
+                  AppFollowEntitiesManager().insertFollowedEntities(
+                      [BlazeFollowEntity(id: id)]).then((_) {
                     if (!context.mounted) return;
                     _showInfoDialog('Follow Entities', 'Added: $id');
                     _addEntityController.clear();
@@ -264,8 +292,8 @@ class _ActionScreenState extends State<ActionScreen>
               onPressed: () {
                 final id = _removeEntityController.text.trim();
                 if (id.isNotEmpty) {
-                  AppFollowEntitiesManager()
-                      .removeFollowedEntities([id]).then((_) {
+                  AppFollowEntitiesManager().removeFollowedEntities(
+                      [BlazeFollowEntity(id: id)]).then((_) {
                     if (!context.mounted) return;
                     _showInfoDialog('Follow Entities', 'Removed: $id');
                     _removeEntityController.clear();
@@ -277,11 +305,13 @@ class _ActionScreenState extends State<ActionScreen>
           _buildActionSection(
             'Get All Entities',
             child: _buildActionButton('Get', () {
-              AppFollowEntitiesManager().getFollowedEntities().then((ids) {
+              AppFollowEntitiesManager().getFollowedEntities().then((entities) {
                 if (!context.mounted) return;
                 _showInfoDialog(
                   'Followed Entities',
-                  ids.isEmpty ? '(empty)' : ids.join(', '),
+                  entities.isEmpty
+                      ? '(empty)'
+                      : entities.map((entity) => entity.id).join(', '),
                 );
               });
             }),

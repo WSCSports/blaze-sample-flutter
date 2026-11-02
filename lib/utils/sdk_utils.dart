@@ -126,9 +126,13 @@ void playMoment({required String momentId}) {
 void playMoments({
   required BlazeDataSourceType dataSource,
   String? entryContentId,
+  BlazeMomentsPlayerStyle? playerStyle,
 }) {
   if (_shouldBlockPlayLaunch()) return;
-  BlazeSDK.playMoments(dataSource: dataSource, entryContentId: entryContentId)
+  BlazeSDK.playMoments(
+          dataSource: dataSource,
+          entryContentId: entryContentId,
+          playerStyle: playerStyle)
       .then((_) {
     debugPrint('playMoments success');
   }).catchError((error) {
